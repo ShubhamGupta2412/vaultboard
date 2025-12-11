@@ -72,6 +72,28 @@ export default function EntriesGrid({ userRole }: { userRole: string }) {
     setFilteredEntries(filtered)
   }
 
+  const handleDelete = async (entryId: string) => {
+    if (!confirm('Are you sure you want to delete this entry?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/entries/${entryId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete entry')
+      }
+
+      // Remove from local state
+      setEntries(entries.filter(entry => entry.id !== entryId))
+    } catch (error) {
+      console.error('Error deleting entry:', error)
+      alert('Failed to delete entry. Please try again.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -189,7 +211,7 @@ export default function EntriesGrid({ userRole }: { userRole: string }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEntries.map(entry => (
-            <EntryCard key={entry.id} entry={entry} userRole={userRole} />
+            <EntryCard key={entry.id} entry={entry} userRole={userRole} onDelete={handleDelete} />
           ))}
         </div>
       )}
