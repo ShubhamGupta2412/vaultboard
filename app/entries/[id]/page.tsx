@@ -1,7 +1,7 @@
 /**
  * View Single Entry Page
  * 
- * Display entry details with edit/delete actions
+ * Display entry details with edit/delete actions and access history
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -10,6 +10,10 @@ import { getUserRole } from '@/lib/api/auth-server'
 import Link from 'next/link'
 import DeleteButton from '@/components/DeleteButton'
 import CopyButton from '@/components/CopyButton'
+import AccessIndicator from '@/components/AccessIndicator'
+import SecurityBadge from '@/components/SecurityBadge'
+import AccessLogViewer from '@/components/AccessLogViewer'
+import ExportButton from '@/components/ExportButton'
 
 export default async function EntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -39,6 +43,14 @@ export default async function EntryDetailPage({ params }: { params: Promise<{ id
     .from('knowledge_entries')
     .update({ last_accessed_at: new Date().toISOString() })
     .eq('id', id)
+
+  // Log the access
+  await supabase.from('access_logs').insert({
+    entry_id: id,
+    accessed_by: user.id,
+    action: 'view',
+    accessed_at: new Date().toISOString(),
+  })
 
   // Check if user can modify (creator or admin)
   const canModify = user.id === entry.user_id || userRole === 'admin'
@@ -82,46 +94,52 @@ export default async function EntryDetailPage({ params }: { params: Promise<{ id
             >
               ← Back to Dashboard
             </Link>
-            {canModify && (
-              <div className="flex gap-2">
-                <Link
-                  href={`/entries/${id}/edit`}
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Edit
-                </Link>
-                <DeleteButton entryId={id} />
-              </div>
-            )}
+            <div className="flex gap-2">
+              <ExportButton entryId={id} entryTitle={entry.title} />
+              {canModify && (
+                <>
+                  <Link
+                    href={`/entries/${id}/edit`}
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Edit
+                  </Link>
+                  <DeleteButton entryId={id} />
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+        {/* Entry Details Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Badges */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${categoryColors[entry.category as keyof typeof categoryColors]}`}>
-              {entry.category}
-            </span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${classificationColors[entry.classification as keyof typeof classificationColors]}`}>
-              {entry.classification}
-            </span>
-            {entry.is_sensitive && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                </svg>
-                Sensitive
-              </span>
-            )}
+          {/* Security Indicators */}
+          <div className="flex items-center gap-3 mb-4">
+            <AccessIndicator 
+              classification={entry.classification as any}
+              sensitive={entry.is_sensitive}
+              size="md"
+            />
+            <SecurityBadge 
+              classification={entry.classification as any}
+              sensitive={entry.is_sensitive}
+            />
           </div>
 
           {/* Title */}
           <h1 className="text-3xl font-bold text-slate-900 mb-6">
             {entry.title}
           </h1>
+
+          {/* Category Badge */}
+          <div className="mb-6">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize ${categoryColors[entry.category as keyof typeof categoryColors]}`}>
+              {entry.category}
+            </span>
+          </div>
 
           {/* Metadata Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-slate-50 rounded-lg">
@@ -175,6 +193,9 @@ export default async function EntryDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
         </div>
+
+        {/* Access Log Viewer */}
+        <AccessLogViewer entryId={id} userRole={userRole || 'viewer'} />
       </main>
     </div>
   )

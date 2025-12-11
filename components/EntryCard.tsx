@@ -8,6 +8,7 @@
 
 import Link from 'next/link'
 import { KnowledgeEntry } from '@/lib/api/entries'
+import SecurityBadge from './SecurityBadge'
 
 interface EntryCardProps {
   entry: KnowledgeEntry
@@ -54,25 +55,18 @@ export default function EntryCard({
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-slate-200">
-      {/* Header with Category & Classification */}
+      {/* Header with Badges */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex gap-2 flex-wrap">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[entry.category]}`}>
+        <div className="flex gap-2 flex-wrap items-center">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${categoryColors[entry.category]}`}>
             {entry.category}
           </span>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${classificationColors[entry.classification]}`}>
-            {entry.classification}
-          </span>
+          <SecurityBadge 
+            classification={entry.classification}
+            sensitive={entry.is_sensitive}
+            compact
+          />
         </div>
-        {entry.is_sensitive && (
-          <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )}
       </div>
 
       {/* Title */}

@@ -107,6 +107,14 @@ export async function PUT(
       )
     }
 
+    // Log the update action
+    await supabase.from('access_logs').insert({
+      entry_id: entryId,
+      accessed_by: user.id,
+      action: 'update',
+      accessed_at: new Date().toISOString(),
+    })
+
     return NextResponse.json({
       success: true,
       message: 'Entry updated successfully',
@@ -163,6 +171,14 @@ export async function DELETE(
         { status: 403 }
       )
     }
+
+    // Log the delete action before deleting
+    await supabase.from('access_logs').insert({
+      entry_id: entryId,
+      accessed_by: user.id,
+      action: 'delete',
+      accessed_at: new Date().toISOString(),
+    })
 
     // Delete entry
     const { error } = await supabase

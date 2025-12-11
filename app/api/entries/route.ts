@@ -186,6 +186,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Log the create action
+    await supabase.from('access_logs').insert({
+      entry_id: data.id,
+      accessed_by: user.id,
+      action: 'create',
+      accessed_at: new Date().toISOString(),
+    })
+
     return NextResponse.json({
       success: true,
       message: 'Entry created successfully',
