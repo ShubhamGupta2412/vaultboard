@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/api/auth-server'
+import { conditionalDecrypt } from '@/lib/utils/encryption'
 
 export async function GET(
   request: NextRequest,
@@ -45,6 +46,11 @@ export async function GET(
     // Check if user can view this entry
     const userRole = await getUserRole(user.id)
     
+    // Decrypt content if sensitive
+    const decryptedContent = entry.is_sensitive 
+      ? conditionalDecrypt(entry.content, entry.is_sensitive)
+      : entry.content
+    
     // Log the export action
     await supabase.from('access_logs').insert({
       entry_id: entryId,
@@ -57,7 +63,7 @@ export async function GET(
     if (format === 'json') {
       const exportData = {
         title: entry.title,
-        content: entry.content,
+        content: decryptedContent,
         category: entry.category,
         classification: entry.classification,
         tags: entry.tags,
@@ -95,7 +101,7 @@ Exported By: ${user.email}
 
 CONTENT:
 
-${entry.content}
+${decryptedContent}
 
 ---
 

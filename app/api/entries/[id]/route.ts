@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/api/auth-server'
+import { conditionalEncrypt, conditionalDecrypt } from '@/lib/utils/encryption'
 
 export async function GET(
   request: NextRequest,
@@ -47,6 +48,11 @@ export async function GET(
       .update({ last_accessed_at: new Date().toISOString() })
       .eq('id', entryId)
 
+    // Decrypt content if sensitive
+    if (data.is_sensitive && data.content) {
+      data.content = conditionalDecrypt(data.content, data.is_sensitive)
+    }
+
     return NextResponse.json({
       success: true,
       data
@@ -80,6 +86,12 @@ export async function PUT(
 
     // Parse request body
     const body = await request.json()
+    
+    // Encrypt content if it's being updated and entry is sensitive
+    if (body.content && body.is_sensitive) {
+      body.content = conditionalEncrypt(body.content, body.is_sensitive)
+    }
+    
     const updates = {
       ...body,
       updated_at: new Date().toISOString()

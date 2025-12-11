@@ -15,6 +15,7 @@ import SecurityBadge from '@/components/SecurityBadge'
 import AccessLogViewer from '@/components/AccessLogViewer'
 import ExportButton from '@/components/ExportButton'
 import Logo from '@/components/Logo'
+import { conditionalDecrypt } from '@/lib/utils/encryption'
 
 export default async function EntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -52,6 +53,11 @@ export default async function EntryDetailPage({ params }: { params: Promise<{ id
     action: 'view',
     accessed_at: new Date().toISOString(),
   })
+
+  // Decrypt content if sensitive
+  if (entry.is_sensitive && entry.content) {
+    entry.content = conditionalDecrypt(entry.content, entry.is_sensitive)
+  }
 
   // Check if user can modify (creator or admin)
   const canModify = user.id === entry.user_id || userRole === 'admin'

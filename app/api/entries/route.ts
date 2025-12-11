@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/api/auth-server'
+import { conditionalEncrypt, conditionalDecrypt } from '@/lib/utils/encryption'
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,16 +77,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Mask sensitive content
-    const maskedData = (data || []).map(entry => {
+    // Decrypt and mask sensitive content
+    const processedData = (data || []).map(entry => {
       if (entry.is_sensitive && entry.content) {
-        const content = entry.content
-        if (content.length <= 8) {
+        // First decrypt if encrypted
+        const decryptedContent = conditionalDecrypt(entry.content, entry.is_sensitive)
+        
+        // Then mask for display
+        if (decryptedContent.length <= 8) {
           return { ...entry, content: '****' }
         }
-        const first4 = content.substring(0, 4)
-        const last4 = content.substring(content.length - 4)
-        const masked = '*'.repeat(Math.min(content.length - 8, 20))
+        const first4 = decryptedContent.substring(0, 4)
+        const last4 = decryptedContent.substring(decryptedContent.length - 4)
+        const masked = '*'.repeat(Math.min(decryptedContent.length - 8, 20))
         return { ...entry, content: `${first4}${masked}${last4}` }
       }
       return entry
@@ -93,7 +97,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: maskedData,
+      data: processedData,
       count: count || 0,
       page,
       limit,
@@ -159,13 +163,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Encrypt content if marked as sensitive
+    const encryptedContent = conditionalEncrypt(content, is_sensitive)
+
     // Create entry
     const { data, error } = await supabase
       .from('knowledge_entries')
       .insert({
         user_id: user.id,
         title,
-        content,
+        content: encryptedContent,
         category,
         classification,
         tags,
