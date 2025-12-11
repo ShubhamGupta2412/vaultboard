@@ -17,6 +17,9 @@ import ExportButton from '@/components/ExportButton'
 import Logo from '@/components/Logo'
 import { conditionalDecrypt } from '@/lib/utils/encryption'
 
+// Force dynamic rendering - requires authentication
+export const dynamic = 'force-dynamic'
+
 export default async function EntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   
