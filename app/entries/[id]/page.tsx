@@ -198,11 +198,39 @@ export default async function EntryDetailPage({ params }: { params: Promise<{ id
               <CopyButton content={entry.content} />
             </div>
             <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
-              <pre className="whitespace-pre-wrap text-sm text-slate-900 font-mono">
+              <pre className="whitespace-pre-wrap font-mono text-sm text-slate-900">
                 {entry.content}
               </pre>
             </div>
           </div>
+
+          {/* Attached Document */}
+          {entry.file_url && entry.file_name && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-slate-700 mb-2">Attached Document</h3>
+              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <svg className="h-8 w-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{entry.file_name}</p>
+                      <p className="text-xs text-slate-600">Document attachment</p>
+                    </div>
+                  </div>
+                  <a
+                    href={entry.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                  >
+                    Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Access Log Viewer */}

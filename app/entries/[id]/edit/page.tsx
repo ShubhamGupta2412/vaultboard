@@ -28,6 +28,9 @@ export default function EditEntryPage({ params }: PageProps) {
   const [tags, setTags] = useState('')
   const [isSensitive, setIsSensitive] = useState(false)
   const [expirationDate, setExpirationDate] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null)
+  const [existingFileName, setExistingFileName] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -53,6 +56,8 @@ export default function EditEntryPage({ params }: PageProps) {
       setTags(entry.tags?.join(', ') || '')
       setIsSensitive(entry.is_sensitive)
       setExpirationDate(entry.expiration_date ? entry.expiration_date.split('T')[0] : '')
+      setExistingFileUrl(entry.file_url)
+      setExistingFileName(entry.file_name)
     } catch (error) {
       console.error('Error fetching entry:', error)
       setError('Failed to load entry')
@@ -74,6 +79,28 @@ export default function EditEntryPage({ params }: PageProps) {
     setIsSubmitting(true)
 
     try {
+      let fileUrl = existingFileUrl
+      let fileName = existingFileName
+
+      // Upload new file if provided (for document category)
+      if (file && category === 'document') {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload file')
+        }
+
+        const uploadData = await uploadResponse.json()
+        fileUrl = uploadData.url
+        fileName = uploadData.fileName
+      }
+
       // Parse tags (comma-separated)
       const tagArray = tags
         .split(',')
@@ -93,6 +120,8 @@ export default function EditEntryPage({ params }: PageProps) {
           tags: tagArray,
           is_sensitive: isSensitive,
           expiration_date: expirationDate || null,
+          file_url: fileUrl,
+          file_name: fileName,
         }),
       })
 
@@ -242,6 +271,41 @@ export default function EditEntryPage({ params }: PageProps) {
                 placeholder="authentication, api, documentation"
               />
             </div>
+
+            {/* File Upload (for document category) */}
+            {category === 'document' && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Document Attachment
+                </label>
+                {existingFileUrl && existingFileName && !file && (
+                  <div className="mb-3 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+                    <p className="text-sm text-slate-700">
+                      Current file: <span className="font-semibold">{existingFileName}</span>
+                    </p>
+                    <a
+                      href={existingFileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-teal-600 hover:text-teal-700 underline"
+                    >
+                      View current file
+                    </a>
+                  </div>
+                )}
+                <input
+                  id="file"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                  disabled={isSubmitting}
+                  accept=".pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.zip"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  {file ? `New file selected: ${file.name}` : 'Upload a new file to replace the existing one (optional)'}
+                </p>
+              </div>
+            )}
 
             {/* Sensitive & Expiration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

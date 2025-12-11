@@ -22,6 +22,7 @@ export default function NewEntryPage() {
   const [tags, setTags] = useState('')
   const [isSensitive, setIsSensitive] = useState(false)
   const [expirationDate, setExpirationDate] = useState('')
+  const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -38,6 +39,28 @@ export default function NewEntryPage() {
     setIsLoading(true)
 
     try {
+      let fileUrl = null
+      let fileName = null
+
+      // Upload file if present (especially for document category)
+      if (file && category === 'document') {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload file')
+        }
+
+        const uploadData = await uploadResponse.json()
+        fileUrl = uploadData.url
+        fileName = uploadData.fileName
+      }
+
       // Parse tags (comma-separated)
       const tagArray = tags
         .split(',')
@@ -57,6 +80,8 @@ export default function NewEntryPage() {
           tags: tagArray,
           is_sensitive: isSensitive,
           expiration_date: expirationDate || null,
+          file_url: fileUrl,
+          file_name: fileName,
         }),
       })
 
@@ -201,6 +226,31 @@ export default function NewEntryPage() {
                 Separate tags with commas
               </p>
             </div>
+
+            {/* File Upload (for document category) */}
+            {category === 'document' && (
+              <div>
+                <label htmlFor="file" className="block text-sm font-medium text-slate-700 mb-2">
+                  Attach Document (Optional)
+                </label>
+                <input
+                  id="file"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                  disabled={isLoading}
+                  accept=".pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.zip"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Supported formats: PDF, DOC, DOCX, TXT, MD, XLSX, XLS, CSV, ZIP (Max 10MB)
+                </p>
+                {file && (
+                  <p className="mt-2 text-sm text-teal-600">
+                    Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Sensitive Checkbox */}
             <div className="flex items-start">

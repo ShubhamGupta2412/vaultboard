@@ -134,7 +134,9 @@ export async function POST(request: NextRequest) {
       classification = 'internal',
       tags = [],
       is_sensitive = false,
-      expiration_date = null
+      expiration_date = null,
+      file_url = null,
+      file_name = null
     } = body
 
     // Validate required fields
@@ -178,6 +180,8 @@ export async function POST(request: NextRequest) {
         tags,
         is_sensitive,
         expiration_date,
+        file_url,
+        file_name,
         created_by: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

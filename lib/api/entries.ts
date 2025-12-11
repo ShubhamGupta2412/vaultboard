@@ -34,6 +34,8 @@ export interface KnowledgeEntry {
   tags: string[]
   is_sensitive: boolean
   expiration_date: string | null
+  file_url: string | null
+  file_name: string | null
   created_at: string
   updated_at: string
   last_accessed_at: string | null
@@ -87,7 +89,9 @@ export async function createEntry(
   classification: EntryClassification = 'internal',
   tags: string[] = [],
   isSensitive: boolean = false,
-  expirationDate: string | null = null
+  expirationDate: string | null = null,
+  fileUrl: string | null = null,
+  fileName: string | null = null
 ): Promise<EntryResponse> {
   try {
     const supabase = createClient()
@@ -123,6 +127,8 @@ export async function createEntry(
         tags,
         is_sensitive: isSensitive,
         expiration_date: expirationDate,
+        file_url: fileUrl,
+        file_name: fileName,
         created_by: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
