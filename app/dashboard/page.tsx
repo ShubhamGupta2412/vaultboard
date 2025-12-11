@@ -103,12 +103,6 @@ export default async function DashboardPage() {
                 <dd className="text-base text-slate-900">{user.email}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-slate-500">User ID</dt>
-                <dd>
-                  <UserIdDisplay userId={user.id} />
-                </dd>
-              </div>
-              <div>
                 <dt className="text-sm font-medium text-slate-500">Role</dt>
                 <dd className="text-base text-slate-900">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800 capitalize">
