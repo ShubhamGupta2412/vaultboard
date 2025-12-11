@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/api/auth-server'
 import Link from 'next/link'
 import EntriesGrid from '@/components/EntriesGrid'
+import Logo from '@/components/Logo'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -32,9 +33,12 @@ export default async function DashboardPage() {
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">VaultBoard</h1>
-              <p className="text-sm text-slate-600">Knowledge Management Platform</p>
+            <div className="flex items-center gap-3">
+              <Logo size="md" showText={false} />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">VaultBoard</h1>
+                <p className="text-sm text-slate-600">Knowledge Management Platform</p>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">

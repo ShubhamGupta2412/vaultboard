@@ -11,6 +11,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from '@/lib/api/auth'
+import Logo from '@/components/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -73,15 +74,12 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            VaultBoard
-          </h1>
+        <div className="text-center flex flex-col items-center">
+          <Logo size="xl" className="mb-6" />
           <h2 className="text-2xl font-semibold text-slate-700 mb-1">
             Welcome Back
           </h2>
@@ -90,6 +88,7 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Login Form */}
         {/* Login Form */}
         <div className="bg-white shadow-xl rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">

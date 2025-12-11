@@ -9,6 +9,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 
 export default function NewEntryPage() {
   const router = useRouter()
@@ -82,7 +83,10 @@ export default function NewEntryPage() {
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900">Create New Entry</h1>
+            <div className="flex items-center gap-4">
+              <Logo size="sm" showText={false} />
+              <h1 className="text-2xl font-bold text-slate-900">Create New Entry</h1>
+            </div>
             <Link
               href="/dashboard"
               className="text-slate-600 hover:text-slate-900 text-sm font-medium"
