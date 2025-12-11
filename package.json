@@ -1,21 +1,43 @@
 {
   "name": "vaultboard",
-  "version": "0.1.0",
+  "version": "2.0.0",
+  "description": "Secure knowledge management system with role-based access control, AES-256 encryption, and document uploads",
+  "author": "Shubham Gupta",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShubhamGupta2412/vaultboard.git"
+  },
+  "keywords": [
+    "knowledge-management",
+    "encryption",
+    "nextjs",
+    "supabase",
+    "authentication",
+    "rbac",
+    "security",
+    "document-management"
+  ],
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.87.1",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
-    "next": "^15.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "next": "^15.5.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
