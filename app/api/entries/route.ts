@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const userRole = await getUserRole(user.id)
     if (!userRole) {
       return NextResponse.json(
-        { error: 'User role not found' },
+        { error: 'User profile not found. Please complete your profile setup.' },
         { status: 403 }
       )
     }

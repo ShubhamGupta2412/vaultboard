@@ -10,6 +10,7 @@ import { getUserProfile } from '@/lib/api/auth-server'
 import Link from 'next/link'
 import EntriesGrid from '@/components/EntriesGrid'
 import Logo from '@/components/Logo'
+import UserIdDisplay from '@/components/UserIdDisplay'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -42,7 +43,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900">{user.email}</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {profile?.full_name || user.email}
+                </p>
                 <p className="text-xs text-slate-600 capitalize">
                   {profile?.role || 'Member'}
                 </p>
@@ -89,14 +92,20 @@ export default async function DashboardPage() {
               Account Information
             </h3>
             <dl className="space-y-3">
+              {profile?.full_name && (
+                <div>
+                  <dt className="text-sm font-medium text-slate-500">Full Name</dt>
+                  <dd className="text-base text-slate-900">{profile.full_name}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-sm font-medium text-slate-500">Email</dt>
                 <dd className="text-base text-slate-900">{user.email}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-slate-500">User ID</dt>
-                <dd className="text-base text-slate-900 font-mono text-xs">
-                  {user.id}
+                <dd>
+                  <UserIdDisplay userId={user.id} />
                 </dd>
               </div>
               <div>

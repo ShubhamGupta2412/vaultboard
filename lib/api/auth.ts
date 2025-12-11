@@ -33,17 +33,19 @@ export interface UserProfile {
 }
 
 /**
- * Sign up a new user with email, password, and role
+ * Sign up a new user with email, password, role, and full name
  * 
  * @param email - User's email address
  * @param password - User's password (min 8 characters)
  * @param role - User's role (admin, manager, member, viewer)
+ * @param fullName - User's full name (optional)
  * @returns AuthResponse with success status and message
  */
 export async function signUp(
   email: string,
   password: string,
-  role: UserRole = 'member'
+  role: UserRole = 'member',
+  fullName?: string
 ): Promise<AuthResponse> {
   try {
     const supabase = createBrowserClient()
@@ -93,24 +95,36 @@ export async function signUp(
     }
 
     // Insert user role into user_roles table
-    const { error: roleError } = await supabase
+    const { data: insertedData, error: roleError } = await supabase
       .from('user_roles')
       .insert({
         user_id: data.user.id,
         email: email,
+        full_name: fullName || null,
         role: role,
         created_at: new Date().toISOString(),
       })
+      .select()
 
     if (roleError) {
-      console.error('Error inserting user role:', roleError)
       // Note: User is still created in auth, but role assignment failed
+      // Log to window for debugging (client-side only)
+      if (typeof window !== 'undefined') {
+        // eslint-disable-next-line no-console
+        console.error('Role insert error:', roleError, 'Attempted role:', role)
+      }
       return {
-        success: true,
-        message: 'Account created but role assignment failed. Please contact support.',
+        success: false,
+        message: `Account created but role assignment failed: ${roleError.message}. Please contact support.`,
         userId: data.user.id,
         error: 'ROLE_INSERT_FAILED',
       }
+    }
+
+    // Log successful role insertion for debugging
+    if (typeof window !== 'undefined' && insertedData) {
+      // eslint-disable-next-line no-console
+      console.log('Role inserted successfully:', insertedData)
     }
 
     return {
@@ -119,7 +133,6 @@ export async function signUp(
       userId: data.user.id,
     }
   } catch (error) {
-    console.error('Signup error:', error)
     return {
       success: false,
       message: 'An unexpected error occurred during signup',
@@ -179,7 +192,6 @@ export async function signIn(
       userId: data.user.id,
     }
   } catch (error) {
-    console.error('Signin error:', error)
     return {
       success: false,
       message: 'An unexpected error occurred during signin',
@@ -212,7 +224,6 @@ export async function signOut(): Promise<AuthResponse> {
       message: 'Signed out successfully',
     }
   } catch (error) {
-    console.error('Signout error:', error)
     return {
       success: false,
       message: 'An unexpected error occurred during signout',

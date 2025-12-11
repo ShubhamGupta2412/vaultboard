@@ -18,6 +18,7 @@ export type UserRole = 'admin' | 'manager' | 'member' | 'viewer'
 export interface UserProfile {
   id: string
   email: string
+  full_name?: string
   role: UserRole
   created_at: string
 }
@@ -37,13 +38,11 @@ export async function getCurrentUser() {
     } = await supabase.auth.getUser()
 
     if (error) {
-      console.error('Error getting current user:', error)
       return null
     }
 
     return user
   } catch (error) {
-    console.error('Get current user error:', error)
     return null
   }
 }
@@ -65,13 +64,15 @@ export async function getUserRole(userId: string): Promise<UserRole | null> {
       .single()
 
     if (error) {
-      console.error('Error getting user role:', error)
+      // Only return default for "not found" errors, not other DB errors
+      if (error.code === 'PGRST116') {
+        return null // Return null to indicate user needs role setup
+      }
       return null
     }
 
     return data?.role as UserRole || null
   } catch (error) {
-    console.error('Get user role error:', error)
     return null
   }
 }
@@ -95,7 +96,6 @@ export async function getUserProfile(
       .single()
 
     if (error) {
-      console.error('Error getting user profile:', error)
       return null
     }
 
@@ -106,11 +106,11 @@ export async function getUserProfile(
     return {
       id: data.user_id,
       email: data.email || '',
+      full_name: data.full_name || undefined,
       role: data.role as UserRole,
       created_at: data.created_at || data.assigned_at || new Date().toISOString(),
     }
   } catch (error) {
-    console.error('Get user profile error:', error)
     return null
   }
 }

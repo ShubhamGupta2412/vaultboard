@@ -17,6 +17,7 @@ export default function SignupPage() {
   const router = useRouter()
   
   // Form state
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -41,7 +42,7 @@ export default function SignupPage() {
     setError('')
 
     // Client-side validation
-    if (!email || !password || !confirmPassword) {
+    if (!fullName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields')
       return
     }
@@ -70,7 +71,7 @@ export default function SignupPage() {
 
     try {
       // Attempt to sign up
-      const result = await signUp(email, password, role)
+      const result = await signUp(email, password, role, fullName)
 
       if (result.success) {
         // Redirect to login on success
@@ -114,6 +115,28 @@ export default function SignupPage() {
                 <p>{error}</p>
               </div>
             )}
+
+            {/* Full Name Input */}
+            <div>
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-slate-700 mb-2"
+              >
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder:text-slate-400"
+                placeholder="John Doe"
+                disabled={isLoading}
+              />
+            </div>
 
             {/* Email Input */}
             <div>
