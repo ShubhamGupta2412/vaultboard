@@ -53,6 +53,28 @@ export default function EntryCard({
     })
   }
 
+  // Check expiration status
+  const getExpirationStatus = () => {
+    if (!entry.expiration_date) return null
+    
+    const now = new Date()
+    const expirationDate = new Date(entry.expiration_date)
+    const daysUntilExpiration = Math.ceil(
+      (expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    if (daysUntilExpiration < 0) {
+      return { status: 'expired', label: 'EXPIRED', color: 'bg-red-100 text-red-800 border-red-200' }
+    } else if (daysUntilExpiration <= 7) {
+      return { status: 'critical', label: `Expires in ${daysUntilExpiration}d`, color: 'bg-orange-100 text-orange-800 border-orange-200' }
+    } else if (daysUntilExpiration <= 14) {
+      return { status: 'warning', label: `Expires in ${daysUntilExpiration}d`, color: 'bg-yellow-100 text-yellow-800 border-yellow-200' }
+    }
+    return null
+  }
+
+  const expirationStatus = getExpirationStatus()
+
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-slate-200">
       {/* Header with Badges */}
@@ -66,6 +88,11 @@ export default function EntryCard({
             sensitive={entry.is_sensitive}
             compact
           />
+          {expirationStatus && (
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${expirationStatus.color}`}>
+              {expirationStatus.label}
+            </span>
+          )}
         </div>
       </div>
 

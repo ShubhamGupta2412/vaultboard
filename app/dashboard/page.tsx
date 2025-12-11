@@ -11,6 +11,7 @@ import Link from 'next/link'
 import EntriesGrid from '@/components/EntriesGrid'
 import Logo from '@/components/Logo'
 import UserIdDisplay from '@/components/UserIdDisplay'
+import ExpiringCredentialsAlert from '@/components/ExpiringCredentialsAlert'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -145,6 +146,9 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Expiring Credentials Alert */}
+        <ExpiringCredentialsAlert />
 
         {/* Entries Grid */}
         <EntriesGrid userRole={profile?.role || 'viewer'} />
