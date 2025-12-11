@@ -1,13 +1,14 @@
 /**
  * Dashboard Page - Protected Route
  * 
- * This is a protected page that requires authentication.
- * Users are redirected here after successful login.
+ * Main dashboard showing user info and knowledge entries
  */
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/api/auth-server'
+import Link from 'next/link'
+import EntriesGrid from '@/components/EntriesGrid'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -57,12 +58,24 @@ export default async function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
-            Welcome to VaultBoard! 🎉
-          </h2>
-          <p className="text-slate-600 text-lg">
-            Your authentication system is set up and working perfectly.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                Knowledge Vault
+              </h2>
+              <p className="text-slate-600 text-lg">
+                Browse, search, and manage your team's knowledge base
+              </p>
+            </div>
+            {(profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'member') && (
+              <Link
+                href="/entries/new"
+                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors duration-200"
+              >
+                + Create Entry
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* User Info Card */}
@@ -126,35 +139,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a
-              href="/entries"
-              className="flex items-center justify-center px-6 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors duration-200"
-            >
-              <span className="font-medium">View Entries</span>
-            </a>
-            <button
-              className="flex items-center justify-center px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200"
-              disabled
-            >
-              <span className="font-medium">Create Entry</span>
-            </button>
-            <button
-              className="flex items-center justify-center px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200"
-              disabled
-            >
-              <span className="font-medium">Settings</span>
-            </button>
-          </div>
-          <p className="mt-4 text-sm text-slate-500 text-center">
-            Additional features coming soon!
-          </p>
-        </div>
+        {/* Entries Grid */}
+        <EntriesGrid userRole={profile?.role || 'viewer'} />
       </main>
     </div>
   )
