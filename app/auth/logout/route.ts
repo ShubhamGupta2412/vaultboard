@@ -17,14 +17,12 @@ export async function POST() {
     const supabase = await createClient()
 
     // Sign out the user
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      console.error('Logout error:', error)
-      return NextResponse.json(
-        { error: 'Failed to sign out' },
-        { status: 500 }
-      )
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) console.error('Logout error:', error)
+    } catch (err) {
+      console.error('Logout signOut exception:', err)
+      // Proceed to redirect even if signOut fails to avoid 500 on user logout
     }
 
     // Redirect to login page

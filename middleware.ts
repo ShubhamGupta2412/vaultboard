@@ -49,9 +49,17 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  // Non-sensitive debug: log presence (true/false) of required env vars
+  console.log('Middleware env check - SUPABASE_URL present:', !!supabaseUrl, 'ANON_KEY present:', !!supabaseAnonKey)
+
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('Missing Supabase environment variables in middleware')
-    return new NextResponse('Internal Server Error', { status: 500 })
+    // Safer fallback: redirect users to login instead of crashing middleware
+    try {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
+    } catch (err) {
+      return NextResponse.next()
+    }
   }
 
   // Create a response object that we can modify
@@ -70,8 +78,8 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
           response = NextResponse.next({
@@ -86,9 +94,17 @@ export async function middleware(request: NextRequest) {
   )
 
   // Get the current user session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const {
+      data: { user: sessionUser },
+    } = await supabase.auth.getUser()
+    user = sessionUser
+  } catch (err) {
+    console.error('Supabase getUser failed in middleware:', err)
+    // If getUser fails, treat as unauthenticated and continue flow
+    user = null
+  }
 
   // Check if the current path is a public route
   const isPublicRoute = matchesRoute(pathname, publicRoutes)
