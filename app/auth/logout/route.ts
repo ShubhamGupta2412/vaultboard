@@ -6,13 +6,17 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
+
+function redirectToLogin(request: NextRequest) {
+  return NextResponse.redirect(new URL('/auth/login', request.url))
+}
 
 /**
  * POST handler for logout
  * Clears the user session and redirects to login
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
@@ -26,7 +30,7 @@ export async function POST() {
     }
 
     // Redirect to login page
-    return NextResponse.redirect(new URL('/auth/login', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+    return redirectToLogin(request)
   } catch (error) {
     console.error('Logout exception:', error)
     return NextResponse.json(
@@ -40,7 +44,7 @@ export async function POST() {
  * GET handler for logout (for direct URL access)
  * Clears the user session and redirects to login
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
@@ -48,11 +52,9 @@ export async function GET() {
     await supabase.auth.signOut()
 
     // Redirect to login page
-    const redirectUrl = new URL('/auth/login', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
-    return NextResponse.redirect(redirectUrl)
+    return redirectToLogin(request)
   } catch (error) {
     console.error('Logout exception:', error)
-    const redirectUrl = new URL('/auth/login', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000')
-    return NextResponse.redirect(redirectUrl)
+    return redirectToLogin(request)
   }
 }
